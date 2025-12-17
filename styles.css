@@ -1,0 +1,187 @@
+body {
+  background: #081020;
+  display: flex;
+  justify-content: center;
+  font-family: Arial, sans-serif;
+  color: white;
+}
+
+.phone {
+  width: 380px;
+  height: 700px;
+  padding: 20px;
+  background: #0f1c33;
+  border-radius: 30px;
+  position: relative;
+  overflow: hidden;
+}
+
+.screen {
+  display: none;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.screen.active {
+  display: flex;
+}
+
+input, select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  box-sizing: border-box;
+}
+
+.full-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  margin-top: 10px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.chip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chip {
+  padding: 8px;
+  background: #223;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chip .label {
+  flex: 1;
+}
+
+/* small card for goal with target input and remove */
+.goal-card {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+  background: #203142;
+  border-radius: 8px;
+}
+
+.goal-card input[type="number"] {
+  width: 110px;
+}
+
+/* Garden */
+.garden-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 60px);
+  gap: 10px;
+  background: #150d1f;
+  padding: 10px;
+  border-radius: 15px;
+  min-height: 340px;
+  align-content: start;
+}
+
+.garden-cell {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  background: transparent;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  position: relative;
+}
+
+/* dry cell (empty brown soil) */
+.dry-cell {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  background: linear-gradient(180deg,#6b3f1e,#4b2b14);
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.6);
+}
+
+/* plant image */
+.garden-cell img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+/* progress bar (small) */
+.progress-bar {
+  width: 56px;
+  height: 6px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 4px;
+  margin-top: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, rgba(88,192,255,0.9), rgba(65,255,170,0.9));
+  border-radius: 4px;
+  transition: width 300ms ease;
+}
+
+/* bottom bar */
+.bottom-bar {
+  position: absolute;
+  bottom: 10px;
+  width: 90%;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* flower preview */
+.flower-preview img {
+  width: 120px;
+}
+
+/* food values */
+#food-values .food-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+button {
+  cursor: pointer;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: none;
+  background: #2a72a8;
+  color: white;
+}
+
+/* remove small button */
+.btn-remove {
+  background: #a33;
+  padding: 6px 8px;
+  border-radius: 6px;
+}
+
+.small {
+  padding: 6px 8px;
+  font-size: 0.9rem;
+}
+
+/* responsive-ish */
+@media (max-width: 420px) {
+  .phone { width: 360px; }
+}

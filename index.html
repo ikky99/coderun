@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NutriGarden</title>
+  <link rel="stylesheet" href="styles.css" /> 
+</head>
+<body>
+
+<div class="phone">
+
+  <!-- 1. Welcome -->
+  <div id="screen-welcome" class="screen active">
+    <h1>NutriGarden</h1>
+
+    <label>Name:
+      <input id="username" placeholder="Enter your name" />
+    </label>
+
+    <label>Date of birth:
+      <input id="dob" type="date" />
+    </label>
+
+    <label>Gender:
+      <select id="gender-welcome">
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+        <option value="other">Other</option>
+      </select>
+    </label>
+
+    <label>Length (cm):
+      <input id="length" type="number" min="0" />
+    </label>
+
+    <label>Weight (kg):
+      <input id="weight" type="number" step="0.1" min="0" />
+    </label>
+
+    <button id="btn-gen-realistic" class="full-btn">Generate realistic goal</button>
+    <button id="btn-gen-own" class="full-btn">Generate own goals</button>
+  </div>
+
+  <!-- Error for realistic -->
+  <div id="screen-error-realistic" class="screen">
+    <h2>Feature not available yet</h2>
+    <p>Sorry — realistic goal generation is not available yet. Check back later.</p>
+    <div class="row">
+      <button class="btn-return" data-target="screen-welcome">Return</button>
+    </div>
+  </div>
+
+  <!-- 2. Realistic Goal (kept but not used) -->
+  <div id="screen-gen-realistic" class="screen">
+    <h2>Realistic Goal</h2>
+
+    <label>Gender:
+      <select id="gender">
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+        <option value="other">Other</option>
+      </select>
+    </label>
+
+    <label>Age:
+      <input id="age" type="number" min="1">
+    </label>
+
+    <label>Weight (kg):
+      <input id="weight2" type="number" step="0.1">
+    </label>
+
+    <label>Height (cm):
+      <input id="height" type="number" step="0.1">
+    </label>
+
+    <div class="row">
+      <button class="btn-return" data-target="screen-welcome">Return</button>
+      <button id="btn-realistic-continue">Continue</button>
+    </div>
+  </div>
+
+  <!-- 2.1 Tracking Selection -->
+  <div id="screen-track-choose" class="screen">
+    <h2>What do you want to track?</h2>
+
+    <div id="track-list" class="chip-list"></div>
+
+    <div class="add-row">
+      <select id="add-track-select">
+        <option value="hydration" data-unit="L">Hydration</option>
+        <option value="protein" data-unit="g">Protein</option>
+        <option value="carbs" data-unit="g">Carbs</option>
+        <option value="fibers" data-unit="g">Fibers</option>
+      </select>
+      <button id="add-track-btn">+</button>
+    </div>
+
+    <div class="row">
+      <button class="btn-return" data-target="screen-gen-realistic">Return</button>
+      <button id="track-continue">Continue</button>
+    </div>
+  </div>
+
+  <!-- 3. Own Goals -->
+  <div id="screen-gen-own" class="screen">
+    <h2>Set Your Own Goals</h2>
+
+    <div id="own-track-list" class="chip-list"></div>
+
+    <div class="add-row">
+      <select id="add-own-select">
+        <option value="hydration" data-unit="L">Hydration</option>
+        <option value="protein" data-unit="g">Protein</option>
+        <option value="carbs" data-unit="g">Carbs</option>
+        <option value="fibers" data-unit="g">Fibers</option>
+      </select>
+      <button id="add-own-btn">+</button>
+    </div>
+
+    <div class="row">
+      <button class="btn-return" data-target="screen-welcome">Return</button>
+      <button id="own-continue">Continue</button>
+    </div>
+  </div>
+
+  <!-- 4. Garden -->
+  <div id="screen-garden" class="screen">
+    <h2>Garden</h2>
+
+    <div id="garden" class="garden-grid"></div>
+
+    <div class="bottom-bar">
+      <button id="btn-change-tracked">Change tracked nutrients</button>
+      <button id="btn-add-food">Add food</button>
+    </div>
+  </div>
+
+  <!-- 4.1 Flower Detail -->
+  <div id="screen-flower" class="screen">
+    <button class="btn-return" data-target="screen-garden">← Back</button>
+
+    <div id="flower-preview" class="flower-preview"></div>
+    <h3 id="flower-nutrient"></h3>
+    <div id="flower-progress-text"></div>
+
+    <canvas id="flower-graph" width="300" height="140"></canvas>
+  </div>
+
+  <!-- 4.2 Add Food -->
+  <div id="screen-add-food" class="screen">
+    <h2>Add Food / Drink</h2>
+
+    <label>Food name:
+      <input id="food-name" placeholder="banana" />
+    </label>
+
+    <div id="food-values"></div>
+
+    <div class="row">
+      <button class="btn-return" data-target="screen-garden">Return</button>
+      <button id="btn-add-food-save">Add</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
