@@ -85,11 +85,11 @@ input, select {
 .garden-grid {
   display: grid;
   grid-template-columns: repeat(5, 60px);
+  grid-template-rows: repeat(8, 60px); /* ✅ ALTIJD 8 rijen */
   gap: 10px;
   background: #150d1f;
   padding: 10px;
   border-radius: 15px;
-  min-height: 340px;
   align-content: start;
 }
 
