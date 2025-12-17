@@ -45,6 +45,7 @@ input, select {
   display: flex;
   justify-content: space-between;
   gap: 10px;
+  align-items: center;
 }
 
 .chip-list {
@@ -120,24 +121,6 @@ input, select {
   object-fit: contain;
 }
 
-/* progress bar (small) */
-.progress-bar {
-  width: 56px;
-  height: 6px;
-  background: rgba(255,255,255,0.12);
-  border-radius: 4px;
-  margin-top: 4px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, rgba(88,192,255,0.9), rgba(65,255,170,0.9));
-  border-radius: 4px;
-  transition: width 300ms ease;
-}
-
 /* bottom bar */
 .bottom-bar {
   position: absolute;
@@ -160,6 +143,18 @@ input, select {
   margin-bottom: 8px;
 }
 
+.subhead {
+  margin: 0;
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+.status {
+  font-size: 0.85rem;
+  opacity: 0.85;
+  line-height: 1.2;
+}
+
 button {
   cursor: pointer;
   padding: 8px 10px;
@@ -167,6 +162,11 @@ button {
   border: none;
   background: #2a72a8;
   color: white;
+}
+
+.secondary-btn {
+  background: #1f3a57;
+  border: 1px solid rgba(255,255,255,0.12);
 }
 
 /* remove small button */

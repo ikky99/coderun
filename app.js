@@ -21,25 +21,33 @@ function uid() {
   return Math.random().toString(36).slice(2, 9);
 }
 
+function capitalize(s) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
 // -------------------
-// App state
+// Tracking: only these are allowed (as you requested)
 // -------------------
-let trackedGoals = []; // each: { id, nutrient, unit, target, current, phase }
+const TRACKABLE = new Set(["hydration", "carbs", "fat", "protein"]);
 const MAX_PHASE = 14;
 
 // Unit defaults
 const UNIT_MAP = {
-  hydration: 'L',
-  protein: 'g',
-  carbs: 'g',
-  fibers: 'g'
+  hydration: "L",
+  protein: "g",
+  carbs: "g",
+  fat: "g",
 };
+
+// -------------------
+// App state
+// -------------------
+let trackedGoals = []; // each: { id, nutrient, unit, target, current, phase }
 
 // -------------------
 // Buttons / navigation wiring
 // -------------------
 document.getElementById("btn-gen-realistic").onclick = () => {
-  // read welcome inputs and print age to console
   const name = document.getElementById("username").value;
   const dob = document.getElementById("dob").value;
   const gender = document.getElementById("gender-welcome").value;
@@ -48,13 +56,10 @@ document.getElementById("btn-gen-realistic").onclick = () => {
   const age = calculateAge(dob);
   console.log("User info (welcome):", { name, dob, age, gender, length, weight });
   if (age !== null) console.log("Age:", age);
-
-  // show error screen
   show("screen-error-realistic");
 };
 
 document.getElementById("btn-gen-own").onclick = () => {
-  // read welcome inputs and print age to console
   const name = document.getElementById("username").value;
   const dob = document.getElementById("dob").value;
   const gender = document.getElementById("gender-welcome").value;
@@ -63,7 +68,6 @@ document.getElementById("btn-gen-own").onclick = () => {
   const age = calculateAge(dob);
   console.log("User info (own goals):", { name, dob, age, gender, length, weight });
   if (age !== null) console.log("Age:", age);
-
   show("screen-gen-own");
 };
 
@@ -78,28 +82,20 @@ document.getElementById("btn-realistic-continue").onclick = () =>
 
 // After own goals → garden
 document.getElementById("own-continue").onclick = () => {
-  // if no trackedGoals, seed with hydration default
-  if (trackedGoals.length === 0) {
-    addGoalFromOption({ value: 'hydration', unit: UNIT_MAP['hydration'], defaultTarget: 2 });
-  }
+  if (trackedGoals.length === 0) addGoalFromValue("hydration");
   initGarden();
 };
 
 // After tracking choose → garden
 document.getElementById("track-continue").onclick = () => {
-  // build trackedGoals from track-list chips if not already
-  // (we already add when chips created)
-  if (trackedGoals.length === 0) {
-    addGoalFromOption({ value: 'hydration', unit: UNIT_MAP['hydration'], defaultTarget: 2 });
-  }
+  if (trackedGoals.length === 0) addGoalFromValue("hydration");
   initGarden();
 };
 
 document.getElementById("btn-change-tracked").onclick = () =>
   show("screen-track-choose");
 
-document.getElementById("btn-add-food").onclick = () =>
-  prepareAddFood();
+document.getElementById("btn-add-food").onclick = () => prepareAddFood();
 
 // -------------------
 // Add/track chips logic (shared for track and own screens)
@@ -114,7 +110,6 @@ function removeOptionFromSelect(selectEl, value) {
 }
 
 function addOptionToSelect(selectEl, value, label, unit) {
-  // avoid duplicates
   if (optionElementByValue(selectEl, value)) return;
   const o = document.createElement("option");
   o.value = value;
@@ -123,21 +118,21 @@ function addOptionToSelect(selectEl, value, label, unit) {
   selectEl.appendChild(o);
 }
 
-function addGoalFromOption(opt) {
-  // opt: { value, unit, defaultTarget }
-  const value = opt.value;
-  // check not already exist
+function addGoalFromValue(value) {
+  if (!TRACKABLE.has(value)) return; // hard guard
   if (trackedGoals.find(g => g.nutrient === value)) return;
 
-  const newGoal = {
+  const unit = UNIT_MAP[value] || "";
+  const defaultTarget = value === "hydration" ? 2 : 50;
+
+  trackedGoals.push({
     id: uid(),
     nutrient: value,
-    unit: opt.unit || UNIT_MAP[value] || '',
-    target: opt.defaultTarget || 1,
+    unit,
+    target: defaultTarget,
     current: 0,
-    phase: 1
-  };
-  trackedGoals.push(newGoal);
+    phase: 1,
+  });
 }
 
 // track-screen add btn
@@ -145,47 +140,23 @@ document.getElementById("add-track-btn").onclick = () => {
   const select = document.getElementById("add-track-select");
   const v = select.value;
   if (!v) return;
-  const unit = select.selectedOptions[0]?.dataset.unit || UNIT_MAP[v] || '';
-  // create chip in track-list and add to trackedGoals if missing
-  if (!trackedGoals.find(g => g.nutrient === v)) {
-    const defaultTarget = v === 'hydration' ? 2 : 50;
-    trackedGoals.push({
-      id: uid(),
-      nutrient: v,
-      unit,
-      target: defaultTarget,
-      current: 0,
-      phase: 1
-    });
-    renderTrackList();
-    // remove option so user cannot add same one again
-    removeOptionFromSelect(select, v);
-    // also remove from own select to keep consistent
-    removeOptionFromSelect(document.getElementById("add-own-select"), v);
-  }
+  addGoalFromValue(v);
+
+  renderTrackList();
+  renderOwnList();
+
+  removeOptionFromSelect(select, v);
+  removeOptionFromSelect(document.getElementById("add-own-select"), v);
 };
 
-// own-screen add btn — show goal card with editable target and remove
+// own-screen add btn
 document.getElementById("add-own-btn").onclick = () => {
   const select = document.getElementById("add-own-select");
   const v = select.value;
   if (!v) return;
-  if (trackedGoals.find(g => g.nutrient === v)) return;
 
-  const unit = select.selectedOptions[0]?.dataset.unit || UNIT_MAP[v] || '';
-  const defaultTarget = v === 'hydration' ? 2 : 50;
+  addGoalFromValue(v);
 
-  const goal = {
-    id: uid(),
-    nutrient: v,
-    unit,
-    target: defaultTarget,
-    current: 0,
-    phase: 1
-  };
-  trackedGoals.push(goal);
-
-  // remove option in both selects so cannot re-add
   removeOptionFromSelect(select, v);
   removeOptionFromSelect(document.getElementById("add-track-select"), v);
 
@@ -219,31 +190,29 @@ function renderOwnList() {
       <input type="number" step="any" min="0" value="${g.target}" title="Daily target" />
       <button class="btn-remove small">Remove</button>
     `;
-    // wire input change and remove
+
     const input = card.querySelector("input");
     input.oninput = (e) => {
       const val = parseFloat(e.target.value) || 0;
       g.target = val;
-      renderTrackList(); // keep track-list up to date display
+      renderTrackList();
     };
+
     const removeBtn = card.querySelector(".btn-remove");
     removeBtn.onclick = () => {
-      // remove from trackedGoals
       trackedGoals = trackedGoals.filter(x => x.id !== g.id);
-      // re-add option to selects
+
       addOptionToSelect(document.getElementById("add-own-select"), g.nutrient, capitalize(g.nutrient), g.unit);
       addOptionToSelect(document.getElementById("add-track-select"), g.nutrient, capitalize(g.nutrient), g.unit);
+
       renderOwnList();
       renderTrackList();
     };
 
     list.appendChild(card);
   });
-  renderTrackList();
-}
 
-function capitalize(s) {
-  return s.charAt(0).toUpperCase() + s.slice(1);
+  renderTrackList();
 }
 
 // -------------------
@@ -255,7 +224,6 @@ function initGarden() {
   const garden = document.getElementById("garden");
   garden.innerHTML = "";
 
-  // make 20 cells. For first n (trackedGoals.length) place seeds (phase=1)
   const totalCells = 20;
   for (let i = 0; i < totalCells; i++) {
     const cell = document.createElement("div");
@@ -263,13 +231,11 @@ function initGarden() {
 
     if (i < trackedGoals.length) {
       const g = trackedGoals[i];
-      // ensure goal phase at least 1
       if (!g.phase) g.phase = 1;
 
       const img = document.createElement("img");
       img.src = `images/${g.phase}.png`;
       img.onerror = () => {
-        // fallback to small seed representation: a circle via data URL or just empty
         img.style.display = "none";
         const seed = document.createElement("div");
         seed.style.width = "28px";
@@ -283,20 +249,9 @@ function initGarden() {
       img.title = `${capitalize(g.nutrient)} - phase ${g.phase}`;
       cell.appendChild(img);
 
-      // // small progress bar
-      // const bar = document.createElement("div");
-      // bar.className = "progress-bar";
-      // bar.innerHTML = `<div class="progress-fill" style="width:${computePercent(g)}%"></div>`;
-      // cell.appendChild(bar);
-      // (Removed progress bar under each plant — now visible only in detail screen)
-
       cell.onclick = () => openFlower(g, i);
-
-      // store reference for later updates
       cell.dataset.goalId = g.id;
-
     } else {
-      // dry field cell
       const dry = document.createElement("div");
       dry.className = "dry-cell";
       cell.appendChild(dry);
@@ -306,14 +261,12 @@ function initGarden() {
   }
 }
 
-// compute percentage (0..100)
 function computePercent(goal) {
   if (!goal || !goal.target || goal.target === 0) return 0;
   const pct = Math.min(100, Math.round((goal.current / goal.target) * 100));
   return isNaN(pct) ? 0 : pct;
 }
 
-// update garden UI progress visuals and images
 function refreshGardenUI() {
   const garden = document.getElementById("garden");
   if (!garden) return;
@@ -322,16 +275,11 @@ function refreshGardenUI() {
     if (!id) return;
     const goal = trackedGoals.find(g => g.id === id);
     if (!goal) return;
-    // update image
+
     const img = cell.querySelector("img");
     if (img) {
       img.src = `images/${goal.phase}.png`;
       img.title = `${capitalize(goal.nutrient)} - phase ${goal.phase}`;
-    }
-    // update progress fill
-    const fill = cell.querySelector(".progress-fill");
-    if (fill) {
-      fill.style.width = computePercent(goal) + "%";
     }
   });
 }
@@ -341,7 +289,7 @@ function refreshGardenUI() {
 // -------------------
 function openFlower(goal, indexOrUndefined) {
   show("screen-flower");
-  const goalObj = (typeof goal === 'object') ? goal : trackedGoals[indexOrUndefined];
+  const goalObj = (typeof goal === "object") ? goal : trackedGoals[indexOrUndefined];
   if (!goalObj) return;
 
   document.getElementById("flower-nutrient").textContent = capitalize(goalObj.nutrient);
@@ -350,30 +298,36 @@ function openFlower(goal, indexOrUndefined) {
   document.getElementById("flower-progress-text").textContent =
     `Progress: ${goalObj.current}${goalObj.unit} / ${goalObj.target}${goalObj.unit} (${computePercent(goalObj)}%) — Phase ${goalObj.phase}`;
 
-  // simple canvas graph: show a single bar to visualize percent
   const canvas = document.getElementById("flower-graph");
   const ctx = canvas.getContext("2d");
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  // draw background
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
   ctx.fillStyle = "#0b1220";
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-  // draw border
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
   ctx.strokeStyle = "#2a4863";
-  ctx.strokeRect(20,60,260,40);
-  // fill percent
+  ctx.strokeRect(20, 60, 260, 40);
+
   const pct = computePercent(goalObj);
   ctx.fillStyle = "#58c0ff";
-  ctx.fillRect(22,62, (260 * pct / 100), 36);
+  ctx.fillRect(22, 62, (260 * pct / 100), 36);
+
   ctx.fillStyle = "#fff";
   ctx.font = "16px Arial";
   ctx.fillText(`${pct}%`, 130, 50);
 }
 
 // -------------------
-// Add Food screen handling
+// Add Food screen handling + OpenFoodFacts integration
 // -------------------
+let lastAnalyzed = null; // { foodName, grams, nutrients: {hydration,carbs,fat,protein} }
+
 function prepareAddFood() {
   show("screen-add-food");
+
+  document.getElementById("food-status").textContent = "Fill name + grams, then Analyze.";
+  lastAnalyzed = null;
+
   const container = document.getElementById("food-values");
   container.innerHTML = "";
 
@@ -389,30 +343,69 @@ function prepareAddFood() {
   });
 }
 
-document.getElementById("btn-add-food-save").onclick = () => {
-  const foodName = document.getElementById("food-name").value || 'Food';
-  const inputs = Array.from(document.querySelectorAll("#food-values input"));
-  const additions = {};
+// Analyze button
+document.getElementById("btn-food-analyze").onclick = async () => {
+  const status = document.getElementById("food-status");
+  const foodName = (document.getElementById("food-name").value || "").trim();
+  const grams = parseFloat(document.getElementById("food-grams").value) || 0;
 
+  if (!foodName || grams <= 0) {
+    status.textContent = "Please enter a food name and grams (> 0).";
+    return;
+  }
+
+  const nutrientsWanted = trackedGoals.map(g => g.nutrient).filter(n => TRACKABLE.has(n));
+
+  status.textContent = "Analyzing with OpenFoodFacts...";
+  try {
+    const nutrients = await fetchNutritionFromOpenFoodFacts({
+      foodName,
+      grams,
+      nutrientsWanted,
+    });
+
+    const inputs = Array.from(document.querySelectorAll("#food-values input"));
+    inputs.forEach(inp => {
+      const goalId = inp.dataset.goalId;
+      const goal = trackedGoals.find(g => g.id === goalId);
+      if (!goal) return;
+
+      const v = nutrients[goal.nutrient];
+      inp.value = (typeof v === "number" && isFinite(v)) ? String(round2(v)) : "0";
+    });
+
+    lastAnalyzed = { foodName, grams, nutrients };
+    status.textContent = "Done. You can edit values, then press Add.";
+    console.log("OpenFoodFacts nutrients (filtered):", nutrients);
+  } catch (err) {
+    console.error(err);
+    status.textContent = "OpenFoodFacts error. Try a more specific name (brand + product).";
+  }
+};
+
+// Save button
+document.getElementById("btn-add-food-save").onclick = () => {
+  const foodName = (document.getElementById("food-name").value || "Food").trim();
+
+  const inputs = Array.from(document.querySelectorAll("#food-values input"));
+  const additionsByGoalId = {};
   inputs.forEach(inp => {
     const id = inp.dataset.goalId;
     const val = parseFloat(inp.value) || 0;
-    if (!additions[id]) additions[id] = 0;
-    additions[id] += val;
+    additionsByGoalId[id] = val;
   });
 
-  // Apply additions to trackedGoals
-  Object.entries(additions).forEach(([id, addVal]) => {
+  Object.entries(additionsByGoalId).forEach(([id, addVal]) => {
     const g = trackedGoals.find(x => x.id === id);
     if (!g) return;
+
     g.current += addVal;
-    // check for progress >= target -> advance phases accordingly
+
     if (g.target && g.target > 0) {
       while (g.current >= g.target) {
         g.current -= g.target;
         if (g.phase < MAX_PHASE) g.phase++;
         else {
-          // if already at max phase, keep at max and cap current to target
           g.current = Math.min(g.current, g.target);
           break;
         }
@@ -420,15 +413,117 @@ document.getElementById("btn-add-food-save").onclick = () => {
     }
   });
 
-  console.log(`Added ${foodName}:`, additions);
-  // refresh UI
+  console.log(`Added ${foodName}:`, additionsByGoalId, { analyzed: lastAnalyzed });
   refreshGardenUI();
-  // go back to garden
   show("screen-garden");
 };
 
 // -------------------
-// initial sample: keep empty trackedGoals until user adds
+// OpenFoodFacts adapter (NO API KEY NEEDED)
+// -------------------
+async function fetchNutritionFromOpenFoodFacts({ foodName, grams, nutrientsWanted }) {
+  // Public search endpoint. Returns multiple products.
+  const SEARCH_URL =
+    "https://world.openfoodfacts.org/cgi/search.pl?search_simple=1&action=process&json=1&page_size=10&search_terms=";
+
+  // Some extra heuristics: search with the same string
+  const q = encodeURIComponent(foodName);
+  const r = await fetch(SEARCH_URL + q);
+  if (!r.ok) throw new Error(`OpenFoodFacts search failed (${r.status})`);
+  const data = await r.json();
+
+  const products = Array.isArray(data.products) ? data.products : [];
+  const product = pickBestOffProduct(products, foodName);
+  if (!product || !product.nutriments) {
+    // Hydration fallback for plain water/drinks
+    return hydrationFallbackOnly(foodName, grams, nutrientsWanted);
+  }
+
+  const n = product.nutriments;
+
+  // OFF nutriments are often per 100g:
+  const per100 = {
+    protein: toNum(n.proteins_100g),
+    carbs: toNum(n.carbohydrates_100g),
+    fat: toNum(n.fat_100g),
+    // sometimes present:
+    hydration: toNum(n.water_100g),
+  };
+
+  // Scale to grams
+  const factor = grams / 100;
+  let scaled = {
+    protein: per100.protein * factor,
+    carbs: per100.carbs * factor,
+    fat: per100.fat * factor,
+    hydration: per100.hydration * factor,
+  };
+
+  // If hydration missing, use fallback for drinks
+  if (!scaled.hydration || scaled.hydration === 0) {
+    const fb = hydrationFallbackOnly(foodName, grams, ["hydration"]);
+    if (typeof fb.hydration === "number") scaled.hydration = fb.hydration;
+  }
+
+  // Return only the nutrients the user tracks
+  const out = {};
+  nutrientsWanted.forEach(k => {
+    if (TRACKABLE.has(k)) out[k] = (typeof scaled[k] === "number" && isFinite(scaled[k])) ? scaled[k] : 0;
+  });
+
+  return out;
+}
+
+// Pick a decent product from results (best effort)
+function pickBestOffProduct(products, query) {
+  const q = (query || "").toLowerCase();
+
+  // prefer products with nutriments + some name
+  const withNutr = products.filter(p => p && p.nutriments);
+  if (withNutr.length === 0) return null;
+
+  // try exact-ish match on product_name
+  const exact = withNutr.find(p => (p.product_name || "").toLowerCase().includes(q));
+  if (exact) return exact;
+
+  // otherwise just take first with nutriments
+  return withNutr[0];
+}
+
+// Hydration fallback: treats many drinks as ~water by mass (grams -> liters)
+function hydrationFallbackOnly(foodName, grams, nutrientsWanted) {
+  const out = {};
+  nutrientsWanted.forEach(k => out[k] = 0);
+
+  const name = (foodName || "").toLowerCase();
+  const looksLikeDrink =
+    name.includes("water") ||
+    name.includes("cola") ||
+    name.includes("soda") ||
+    name.includes("juice") ||
+    name.includes("tea") ||
+    name.includes("coffee") ||
+    name.includes("milk");
+
+  if (looksLikeDrink && nutrientsWanted.includes("hydration")) {
+    // assume grams ~= ml; liters = grams / 1000
+    out.hydration = grams / 1000;
+  }
+  return out;
+}
+
+// helpers
+function toNum(v) {
+  if (typeof v === "number" && isFinite(v)) return v;
+  const n = parseFloat(v);
+  return Number.isFinite(n) ? n : 0;
+}
+function round2(x) {
+  return Math.round(x * 100) / 100;
+}
+
+// -------------------
+// initial sample
 // -------------------
 renderOwnList();
 renderTrackList();
