@@ -1,13 +1,8 @@
 TODO:
 oafje
-1. Bloemen horizontaal
-2. verspreiden (nieuwe pixels erbij)
-3. Tuin op hele scherm ipv leeg gedeelte
-5. Balk weghalen na alle 4 goals invullen 
-6. Elke goal losse bloem maken
 7. Generate goals implementeren met die API
-8. Knop maken om naar volgende dag te gaan (een dag te skippen)
-9. Bloemen dood gaan als je goal niet haalt (of phases terug, misschien nieuwe pixels)
+10. niet onder minimum carbs tracken
+
 
 Dan testen
 
@@ -17,3 +12,9 @@ Dan testen
 
 Done:
 4. API implementeren voor food invullen 
+1. Bloemen horizontaal
+2. verspreiden (nieuwe pixels erbij)
+3. Tuin op hele scherm ipv leeg gedeelte
+8. Knop maken om naar volgende dag te gaan (een dag te skippen)
+9. Bloemen dood gaan als je goal niet haalt (of phases terug, misschien nieuwe pixels)
+6. Elke goal losse bloem maken

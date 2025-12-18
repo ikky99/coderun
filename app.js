@@ -1,4 +1,9 @@
+let hadFoodInputToday = false;
+let currentDay = 0;
+
+// -------------------
 // Simple navigation system
+// -------------------
 function show(id) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
@@ -38,10 +43,28 @@ const UNIT_MAP = {
   fat: "g",
 };
 
+// ✅ Bloem per nutrient (mapnaam in /images)
+const FLOWER_FOLDER_MAP = {
+  hydration: "bloem1",
+  protein: "bloem2",
+  carbs: "bloem3",
+  fat: "bloem4",
+};
+
+// ✅ pas aan als je bestanden .jpg zijn
+const IMG_EXT = "png";
+
+// helper: juiste image path voor deze nutrient + phase
+function getFlowerImagePath(goal, phase) {
+  const folder = FLOWER_FOLDER_MAP[goal?.nutrient] || "bloem1";
+  const p = Math.max(1, Math.min(MAX_PHASE, parseInt(phase, 10) || 1));
+  return `images/${folder}/${p}.${IMG_EXT}`;
+}
+
 // Garden fixed layout
 const GRID_COLS = 5;
-const GRID_ROWS = 8;       // ✅ max 8 rijen
-const LANE_ROWS = 2;       // ✅ 2 rijen per voedingswaarde
+const GRID_ROWS = 8;       // max 8 rijen
+const LANE_ROWS = 2;       // 2 rijen per voedingswaarde
 const MAX_LANES = Math.floor(GRID_ROWS / LANE_ROWS); // 4 lanes
 
 // -------------------
@@ -133,7 +156,7 @@ function addGoalFromValue(value) {
     target: defaultTarget,
     current: 0,
     phase: 1,
-    cycle: 0, // hoeveel keer volle bloem -> bepaalt kolom/rij
+    cycle: 0,
   });
 }
 
@@ -246,7 +269,7 @@ function renderGarden() {
     cells.push(cell);
   }
 
-  // max 4 nutrients laten zien (anders past het nooit in 8 rijen)
+  // max 4 nutrients laten zien (past in 8 rijen)
   const visibleGoals = trackedGoals.slice(0, MAX_LANES);
 
   visibleGoals.forEach((g, laneIndex) => {
@@ -263,7 +286,7 @@ function renderGarden() {
       cell.innerHTML = "";
 
       const img = document.createElement("img");
-      img.src = `images/${phase}.png`;
+      img.src = getFlowerImagePath(g, phase);
       img.onerror = () => {
         img.style.display = "none";
         const seed = document.createElement("div");
@@ -274,6 +297,7 @@ function renderGarden() {
         seed.style.boxShadow = "0 2px 4px rgba(0,0,0,0.5) inset";
         cell.appendChild(seed);
       };
+
       img.title = `${capitalize(g.nutrient)} - phase ${phase}`;
       cell.appendChild(img);
 
@@ -322,7 +346,7 @@ function openFlower(goal, indexOrUndefined) {
 
   document.getElementById("flower-nutrient").textContent = capitalize(goalObj.nutrient);
   document.getElementById("flower-preview").innerHTML =
-    `<img src="images/${goalObj.phase}.png" onerror="this.style.display='none'">`;
+    `<img src="${getFlowerImagePath(goalObj, goalObj.phase)}" onerror="this.style.display='none'">`;
 
   document.getElementById("flower-progress-text").textContent =
     `Progress: ${goalObj.current}${goalObj.unit} / ${goalObj.target}${goalObj.unit} (${computePercent(goalObj)}%) — Phase ${goalObj.phase}`;
@@ -426,7 +450,7 @@ document.getElementById("btn-add-food-save").onclick = () => {
 
         g.phase = (g.phase || 1) + 1;
 
-        // ✅ als max bereikt -> nieuwe seed rechts
+        // als max bereikt -> nieuwe seed rechts
         if (g.phase > MAX_PHASE) {
           g.phase = 1;
           g.cycle = (typeof g.cycle === "number" ? g.cycle : 0) + 1;
@@ -435,10 +459,25 @@ document.getElementById("btn-add-food-save").onclick = () => {
     }
   });
 
+  hadFoodInputToday = true;
   console.log(`Added ${foodName}:`, additionsByGoalId, { analyzed: lastAnalyzed });
   refreshGardenUI();
   show("screen-garden");
 };
+
+document.getElementById("skip-btn").addEventListener("click", () => {
+  currentDay += 1;
+
+  // als je vandaag niks hebt ingevoerd: 1 fase terug voor elke tracked goal
+  if (!hadFoodInputToday) {
+    trackedGoals.forEach(g => regressOnePhase(g));
+  }
+
+  hadFoodInputToday = false;
+
+  refreshGardenUI();
+  show("screen-garden");
+});
 
 // -------------------
 // OpenFoodFacts adapter (NO API KEY NEEDED)
@@ -529,6 +568,23 @@ function toNum(v) {
 
 function round2(x) {
   return Math.round(x * 100) / 100;
+}
+
+function regressOnePhase(goal) {
+  if (!goal) return;
+
+  if ((goal.phase || 1) <= 1) {
+    if ((goal.cycle || 0) > 0) {
+      goal.cycle -= 1;
+      goal.phase = MAX_PHASE;
+    } else {
+      goal.phase = 1;
+    }
+  } else {
+    goal.phase -= 1;
+  }
+
+  goal.current = 0;
 }
 
 // -------------------

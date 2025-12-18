@@ -85,7 +85,7 @@ input, select {
 .garden-grid {
   display: grid;
   grid-template-columns: repeat(5, 60px);
-  grid-template-rows: repeat(8, 60px); /* ✅ ALTIJD 8 rijen */
+  grid-template-rows: repeat(8, 60px);
   gap: 10px;
   background: #150d1f;
   padding: 10px;
@@ -103,6 +103,7 @@ input, select {
   align-items: center;
   flex-direction: column;
   position: relative;
+  overflow: hidden; /* knipt alles buiten 60x60 af */
 }
 
 /* dry cell (empty brown soil) */
@@ -114,11 +115,15 @@ input, select {
   box-shadow: inset 0 2px 6px rgba(0,0,0,0.6);
 }
 
-/* plant image */
+/* images in cells */
 .garden-cell img {
-  width: 48px;
-  height: 48px;
+  width: 100%;
+  height: 100%;
+  max-width: 60px;
+  max-height: 60px;
   object-fit: contain;
+  display: block;
+  image-rendering: pixelated;
 }
 
 /* bottom bar */
@@ -179,6 +184,30 @@ button {
 .small {
   padding: 6px 8px;
   font-size: 0.9rem;
+}
+
+/* Skip button */
+.skip-btn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: bold;
+
+  background-color: #ffb703;
+  color: #000;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  z-index: 1000;
+}
+
+.skip-btn:hover {
+  background-color: #ffa200;
 }
 
 /* responsive-ish */
