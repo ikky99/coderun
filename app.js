@@ -30,6 +30,10 @@ function capitalize(s) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+function clamp(x, min, max) {
+  return Math.max(min, Math.min(max, x));
+}
+
 // -------------------
 // Tracking
 // -------------------
@@ -72,37 +76,71 @@ const MAX_LANES = Math.floor(GRID_ROWS / LANE_ROWS); // 4 lanes
 // -------------------
 let trackedGoals = []; // { id, nutrient, unit, target, current, phase, cycle }
 
+// NEW: mode + profile
+let goalMode = null; // "realistic" | "own" | null
+let userProfile = null; // { age, gender, heightCm, weightKg, name }
+
 // -------------------
 // Buttons
 // -------------------
 document.getElementById("btn-gen-realistic").onclick = () => {
-  const name = document.getElementById("username").value;
+  const name = (document.getElementById("username").value || "").trim();
   const dob = document.getElementById("dob").value;
   const gender = document.getElementById("gender-welcome").value;
-  const length = document.getElementById("length").value;
-  const weight = document.getElementById("weight").value;
+  const heightCm = parseFloat(document.getElementById("length").value);
+  const weightKg = parseFloat(document.getElementById("weight").value);
   const age = calculateAge(dob);
-  console.log("User info (welcome):", { name, dob, age, gender, length, weight });
-  if (age !== null) console.log("Age:", age);
-  show("screen-error-realistic");
+
+  // minimale validatie (geen extra scherm nodig)
+  if (!age || !heightCm || !weightKg) {
+    alert("Please fill in date of birth, length (cm) and weight (kg).");
+    return;
+  }
+
+  goalMode = "realistic";
+  userProfile = { name, age, gender, heightCm, weightKg };
+
+  // reset nutrients selection
+  trackedGoals = [];
+  resetTrackSelects();
+  renderTrackList();
+  renderOwnList();
+
+  // hint aan
+  document.getElementById("realistic-hint").style.display = "block";
+
+  show("screen-track-choose");
 };
 
 document.getElementById("btn-gen-own").onclick = () => {
-  const name = document.getElementById("username").value;
+  const name = (document.getElementById("username").value || "").trim();
   const dob = document.getElementById("dob").value;
   const gender = document.getElementById("gender-welcome").value;
-  const length = document.getElementById("length").value;
-  const weight = document.getElementById("weight").value;
+  const heightCm = parseFloat(document.getElementById("length").value);
+  const weightKg = parseFloat(document.getElementById("weight").value);
   const age = calculateAge(dob);
-  console.log("User info (own goals):", { name, dob, age, gender, length, weight });
-  if (age !== null) console.log("Age:", age);
+
+  goalMode = "own";
+  userProfile = { name, age, gender, heightCm, weightKg };
+
+  // hint uit
+  document.getElementById("realistic-hint").style.display = "none";
+
+  console.log("User info (own goals):", userProfile);
   show("screen-gen-own");
 };
 
 document.querySelectorAll(".btn-return").forEach(btn => {
-  btn.onclick = () => show(btn.dataset.target);
+  btn.onclick = () => {
+    // als je teruggaat naar welcome, hint uitzetten
+    if (btn.dataset.target === "screen-welcome") {
+      document.getElementById("realistic-hint").style.display = "none";
+    }
+    show(btn.dataset.target);
+  };
 });
 
+// kept but not used
 document.getElementById("btn-realistic-continue").onclick = () =>
   show("screen-track-choose");
 
@@ -111,15 +149,58 @@ document.getElementById("own-continue").onclick = () => {
   initGarden();
 };
 
+// IMPORTANT: realistic targets are applied here
 document.getElementById("track-continue").onclick = () => {
   if (trackedGoals.length === 0) addGoalFromValue("hydration");
+
+  if (goalMode === "realistic") {
+    const workouts = parseInt(document.getElementById("workouts-per-week").value, 10) || 0;
+    applyRealisticTargets({ profile: userProfile, workoutsPerWeek: workouts });
+    renderTrackList(); // laat targets zien
+  }
+
   initGarden();
 };
 
-document.getElementById("btn-change-tracked").onclick = () =>
+document.getElementById("btn-change-tracked").onclick = () => {
+  // hint alleen in realistic mode
+  document.getElementById("realistic-hint").style.display = (goalMode === "realistic") ? "block" : "none";
   show("screen-track-choose");
+};
 
 document.getElementById("btn-add-food").onclick = () => prepareAddFood();
+
+// -------------------
+// Select reset
+// -------------------
+function resetTrackSelects() {
+  const addTrack = document.getElementById("add-track-select");
+  const addOwn = document.getElementById("add-own-select");
+
+  addTrack.innerHTML = "";
+  addOwn.innerHTML = "";
+
+  const opts = [
+    { v: "hydration", label: "Hydration", unit: "L" },
+    { v: "protein", label: "Protein", unit: "g" },
+    { v: "carbs", label: "Carbs", unit: "g" },
+    { v: "fat", label: "Fat", unit: "g" },
+  ];
+
+  opts.forEach(o => {
+    const a = document.createElement("option");
+    a.value = o.v;
+    a.textContent = o.label;
+    a.dataset.unit = o.unit;
+    addTrack.appendChild(a);
+
+    const b = document.createElement("option");
+    b.value = o.v;
+    b.textContent = o.label;
+    b.dataset.unit = o.unit;
+    addOwn.appendChild(b);
+  });
+}
 
 // -------------------
 // Add/track chips logic
@@ -166,6 +247,12 @@ document.getElementById("add-track-btn").onclick = () => {
   if (!v) return;
 
   addGoalFromValue(v);
+  // als realistic mode: targets meteen updaten (op basis van huidige workouts)
+  if (goalMode === "realistic") {
+    const workouts = parseInt(document.getElementById("workouts-per-week").value, 10) || 0;
+    applyRealisticTargets({ profile: userProfile, workoutsPerWeek: workouts });
+  }
+
   renderTrackList();
   renderOwnList();
 
@@ -192,7 +279,7 @@ function renderTrackList() {
   trackedGoals.forEach(g => {
     const chip = document.createElement("div");
     chip.className = "chip";
-    chip.innerHTML = `<div class="label">${capitalize(g.nutrient)} — target: ${g.target}${g.unit}</div>`;
+    chip.innerHTML = `<div class="label">${capitalize(g.nutrient)} — target: ${round2(g.target)}${g.unit}</div>`;
     list.appendChild(chip);
   });
 }
@@ -234,6 +321,85 @@ function renderOwnList() {
 
   renderTrackList();
 }
+
+// -------------------
+// REALISTIC GOALS (NEW)
+// -------------------
+function applyRealisticTargets({ profile, workoutsPerWeek }) {
+  if (!profile) return;
+
+  const age = profile.age;
+  const gender = profile.gender;
+  const weightKg = profile.weightKg;
+  const heightCm = profile.heightCm;
+
+  // Mifflin-St Jeor BMR
+  const base = (10 * weightKg) + (6.25 * heightCm) - (5 * age);
+  let s = 0;
+  if (gender === "male") s = 5;
+  else if (gender === "female") s = -161;
+  else s = -78; // "other" -> midden tussen man/vrouw als simpele benadering
+
+  const bmr = base + s;
+
+  // Activity factor gebaseerd op workouts/week
+  const w = clamp(workoutsPerWeek, 0, 7);
+  let af = 1.2;
+  if (w >= 2 && w <= 3) af = 1.375;
+  else if (w >= 4 && w <= 5) af = 1.55;
+  else if (w >= 6) af = 1.725;
+
+  const tdee = bmr * af;
+
+  // Protein g/kg
+  let proteinPerKg = 1.2;
+  if (w >= 2 && w <= 3) proteinPerKg = 1.6;
+  if (w >= 4) proteinPerKg = 1.8;
+
+  const proteinG = clamp(proteinPerKg * weightKg, 60, 220);
+
+  // Fat % calories
+  const fatPct = (w >= 4) ? 0.30 : 0.25;
+  const fatG = clamp((tdee * fatPct) / 9, 40, 140);
+
+  // Carbs = rest
+  const kcalProtein = proteinG * 4;
+  const kcalFat = fatG * 9;
+  const remaining = Math.max(0, tdee - kcalProtein - kcalFat);
+  const carbsG = clamp(remaining / 4, 80, 500);
+
+  // Hydration: 35ml/kg + 0.4L per workout
+  const hydrationL = clamp((35 * weightKg) / 1000 + (0.4 * w), 1.5, 5.0);
+
+  // Apply only to selected tracked goals
+  trackedGoals.forEach(g => {
+    if (g.nutrient === "protein") g.target = round2(proteinG);
+    if (g.nutrient === "fat") g.target = round2(fatG);
+    if (g.nutrient === "carbs") g.target = round2(carbsG);
+    if (g.nutrient === "hydration") g.target = round2(hydrationL);
+  });
+
+  console.log("Realistic targets applied:", {
+    profile,
+    workoutsPerWeek: w,
+    bmr: round2(bmr),
+    tdee: round2(tdee),
+    targets: {
+      proteinG: round2(proteinG),
+      fatG: round2(fatG),
+      carbsG: round2(carbsG),
+      hydrationL: round2(hydrationL),
+    }
+  });
+}
+
+// als workouts/week verandert, meteen targets updaten (alleen in realistic mode)
+document.getElementById("workouts-per-week").addEventListener("change", () => {
+  if (goalMode !== "realistic") return;
+  const workouts = parseInt(document.getElementById("workouts-per-week").value, 10) || 0;
+  applyRealisticTargets({ profile: userProfile, workoutsPerWeek: workouts });
+  renderTrackList();
+});
 
 // -------------------
 // Garden rendering (8 rows fixed, 2 rows per nutrient)
@@ -349,7 +515,7 @@ function openFlower(goal, indexOrUndefined) {
     `<img src="${getFlowerImagePath(goalObj, goalObj.phase)}" onerror="this.style.display='none'">`;
 
   document.getElementById("flower-progress-text").textContent =
-    `Progress: ${goalObj.current}${goalObj.unit} / ${goalObj.target}${goalObj.unit} (${computePercent(goalObj)}%) — Phase ${goalObj.phase}`;
+    `Progress: ${round2(goalObj.current)}${goalObj.unit} / ${round2(goalObj.target)}${goalObj.unit} (${computePercent(goalObj)}%) — Phase ${goalObj.phase}`;
 
   const canvas = document.getElementById("flower-graph");
   const ctx = canvas.getContext("2d");

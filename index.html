@@ -42,15 +42,6 @@
     <button id="btn-gen-own" class="full-btn">Generate own goals</button>
   </div>
 
-  <!-- Error for realistic -->
-  <div id="screen-error-realistic" class="screen">
-    <h2>Feature not available yet</h2>
-    <p>Sorry — realistic goal generation is not available yet. Check back later.</p>
-    <div class="row">
-      <button class="btn-return" data-target="screen-welcome">Return</button>
-    </div>
-  </div>
-
   <!-- 2. Realistic Goal (kept but not used) -->
   <div id="screen-gen-realistic" class="screen">
     <h2>Realistic Goal</h2>
@@ -85,6 +76,25 @@
   <div id="screen-track-choose" class="screen">
     <h2>What do you want to track?</h2>
 
+    <!-- NEW: sport frequency -->
+    <label>How often do you exercise per week?
+      <select id="workouts-per-week">
+        <option value="0">0 (rarely)</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3" selected>3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+      </select>
+    </label>
+
+    <div id="realistic-hint" class="hint" style="display:none;">
+      In “realistic goal” mode we calculate daily targets based on your age/sex/height/weight + workouts/week.
+      You can still choose which nutrients you want to track.
+    </div>
+
     <div id="track-list" class="chip-list"></div>
 
     <div class="add-row">
@@ -98,7 +108,7 @@
     </div>
 
     <div class="row">
-      <button class="btn-return" data-target="screen-gen-realistic">Return</button>
+      <button class="btn-return" data-target="screen-welcome">Return</button>
       <button id="track-continue">Continue</button>
     </div>
   </div>
