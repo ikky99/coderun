@@ -196,8 +196,9 @@ document.getElementById("btn-realistic-continue").onclick = () =>
 
 document.getElementById("own-continue").onclick = () => {
   if (!requireAtLeastOneGoal()) return;
-  initGarden();
+  show("screen-info-intro");
 };
+
 
 document.getElementById("track-continue").onclick = () => {
   if (!requireAtLeastOneGoal()) return;
@@ -216,8 +217,9 @@ document.getElementById("track-continue").onclick = () => {
     renderTrackList();
   }
 
-  initGarden();
+  show("screen-info-intro");
 };
+
 
 
 
@@ -855,6 +857,12 @@ function regressOnePhase(goal) {
 
   goal.current = 0;
 }
+
+
+document.getElementById("btn-start-garden").onclick = () => {
+  initGarden();
+};
+
 
 // -------------------
 // initial
