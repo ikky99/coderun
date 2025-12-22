@@ -6,8 +6,13 @@ let currentDay = 0;
 // -------------------
 function show(id) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
+  const screen = document.getElementById(id);
+  if (screen) screen.classList.add("active");
+
+  // update Continue buttons whenever a screen is shown
+  updateContinueButtons();
 }
+
 
 // -------------------
 // Utility
@@ -33,6 +38,26 @@ function capitalize(s) {
 function clamp(x, min, max) {
   return Math.max(min, Math.min(max, x));
 }
+
+function requireAtLeastOneGoal() {
+  if (trackedGoals.length === 0) {
+    alert("Please add at least one goal before continuing.");
+    return false;
+  }
+  return true;
+}
+
+
+function updateContinueButtons() {
+  const disabled = trackedGoals.length === 0;
+
+  const ownBtn = document.getElementById("own-continue");
+  const trackBtn = document.getElementById("track-continue");
+
+  if (ownBtn) ownBtn.disabled = disabled;
+  if (trackBtn) trackBtn.disabled = disabled;
+}
+
 
 // -------------------
 // Tracking
@@ -91,7 +116,6 @@ document.getElementById("btn-gen-realistic").onclick = () => {
   const weightKg = parseFloat(document.getElementById("weight").value);
   const age = calculateAge(dob);
 
-  // minimale validatie (geen extra scherm nodig)
   if (!age || !heightCm || !weightKg) {
     alert("Please fill in date of birth, length (cm) and weight (kg).");
     return;
@@ -106,11 +130,19 @@ document.getElementById("btn-gen-realistic").onclick = () => {
   renderTrackList();
   renderOwnList();
 
-  // hint aan
-  document.getElementById("realistic-hint").style.display = "block";
+  // hint off for now
+  document.getElementById("realistic-hint").style.display = "none";
 
+  // Show the new info screen
+  show("screen-info-goals");
+};
+
+// Continue from info screen to activity + track selection
+document.getElementById("btn-info-continue").onclick = () => {
+  document.getElementById("realistic-hint").style.display = "block";
   show("screen-track-choose");
 };
+
 
 document.getElementById("btn-gen-own").onclick = () => {
   const name = (document.getElementById("username").value || "").trim();
@@ -145,22 +177,31 @@ document.getElementById("btn-realistic-continue").onclick = () =>
   show("screen-track-choose");
 
 document.getElementById("own-continue").onclick = () => {
-  if (trackedGoals.length === 0) addGoalFromValue("hydration");
+  if (!requireAtLeastOneGoal()) return;
   initGarden();
 };
 
-// IMPORTANT: realistic targets are applied here
 document.getElementById("track-continue").onclick = () => {
-  if (trackedGoals.length === 0) addGoalFromValue("hydration");
+  if (!requireAtLeastOneGoal()) return;
 
   if (goalMode === "realistic") {
-    const workouts = parseInt(document.getElementById("workouts-per-week").value, 10) || 0;
-    applyRealisticTargets({ profile: userProfile, workoutsPerWeek: workouts });
-    renderTrackList(); // laat targets zien
+    const workouts = parseInt(
+      document.getElementById("workouts-per-week").value,
+      10
+    ) || 0;
+
+    applyRealisticTargets({
+      profile: userProfile,
+      workoutsPerWeek: workouts
+    });
+
+    renderTrackList();
   }
 
   initGarden();
 };
+
+
 
 document.getElementById("btn-change-tracked").onclick = () => {
   // hint alleen in realistic mode
@@ -239,7 +280,10 @@ function addGoalFromValue(value) {
     phase: 1,
     cycle: 0,
   });
+
+  updateContinueButtons();
 }
+
 
 document.getElementById("add-track-btn").onclick = () => {
   const select = document.getElementById("add-track-select");
@@ -306,15 +350,28 @@ function renderOwnList() {
       renderTrackList();
     };
 
-    card.querySelector(".btn-remove").onclick = () => {
-      trackedGoals = trackedGoals.filter(x => x.id !== g.id);
+card.querySelector(".btn-remove").onclick = () => {
+  trackedGoals = trackedGoals.filter(x => x.id !== g.id);
 
-      addOptionToSelect(document.getElementById("add-own-select"), g.nutrient, capitalize(g.nutrient), g.unit);
-      addOptionToSelect(document.getElementById("add-track-select"), g.nutrient, capitalize(g.nutrient), g.unit);
+  addOptionToSelect(
+    document.getElementById("add-own-select"),
+    g.nutrient,
+    capitalize(g.nutrient),
+    g.unit
+  );
 
-      renderOwnList();
-      renderTrackList();
-    };
+  addOptionToSelect(
+    document.getElementById("add-track-select"),
+    g.nutrient,
+    capitalize(g.nutrient),
+    g.unit
+  );
+
+  renderOwnList();
+  renderTrackList();
+  updateContinueButtons();
+};
+
 
     list.appendChild(card);
   });
@@ -756,5 +813,8 @@ function regressOnePhase(goal) {
 // -------------------
 // initial
 // -------------------
+
+
 renderOwnList();
 renderTrackList();
+updateContinueButtons();

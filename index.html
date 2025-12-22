@@ -37,10 +37,32 @@
     <label>Weight (kg):
       <input id="weight" type="number" step="0.1" min="0" />
     </label>
-
-    <button id="btn-gen-realistic" class="full-btn">Generate realistic goal</button>
-    <button id="btn-gen-own" class="full-btn">Generate own goals</button>
+    <button id="btn-gen-realistic" class="full-btn">Generate goals</button>
+    <button id="btn-gen-own" class="full-btn">Set own goals</button>
   </div>
+  <!-- 1.5 Info Screen: How goals are generated -->
+<div id="screen-info-goals" class="screen">
+  <h2>Your Personalized Goals</h2>
+
+  <div class="hint" style="line-height:1.5;">
+    <p>Your daily goals are automatically calculated just for you, based on your profile and how active you are. That way, your flowers (and your body) get exactly what they need!</p>
+    
+    <p>We calculate your Basal Metabolic Rate (BMR) using the Mifflin-St Jeor formula, which takes into account your age, weight, height, and gender. This is the energy your body needs just to keep running while you’re chilling.</p>
+    
+    <p>Next, we add an Activity Factor based on how many workouts you do per week. More activity = more fuel, so your goals adjust to match your lifestyle.</p>
+    
+    <p>Fat targets are set as a percentage of your total calories to make sure you get enough healthy fats. The exact amount depends on how active you are.</p>
+    
+    <p>Carbs fill in the rest of your energy needs after protein and fat are accounted for. This ensures you have enough energy to move, think, and grow your garden!</p>
+    
+    <p>Hydration is personalized too, based on your weight and activity level. Extra workouts? Extra water—your flowers and your body will thank you.</p>
+  </div>
+
+  <div class="row">
+    <button class="btn-return" data-target="screen-welcome">Return</button>
+    <button id="btn-info-continue" class="full-btn">Continue</button>
+  </div>
+</div>
 
   <!-- 2. Realistic Goal (kept but not used) -->
   <div id="screen-gen-realistic" class="screen">
