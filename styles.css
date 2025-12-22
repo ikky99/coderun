@@ -236,3 +236,40 @@ button:disabled {
   box-shadow: none;
 }
 
+
+/* Food status states */
+.status-idle {
+  color: #fff;
+}
+
+.status-loading {
+  color: #ffdd00;
+  font-weight: bold;
+}
+
+.status-success {
+  color: #0f0;
+  font-weight: bold;
+}
+
+.status-error {
+  color: #f33;
+  font-weight: bold;
+}
+
+.garden-grid {
+  width: max-content;
+  margin: 0 auto;
+}
+
+
+.stage-text {
+  margin-top: 12px;
+  padding: 12px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 12px;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  white-space: pre-line; /* keeps line breaks */
+  border: 1px solid rgba(255,255,255,0.08);
+}

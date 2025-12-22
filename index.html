@@ -178,6 +178,8 @@
     <div id="flower-progress-text"></div>
 
     <canvas id="flower-graph" width="300" height="140"></canvas>
+    <div id="flower-stage-text" class="stage-text"></div>
+
   </div>
 
   <!-- 4.2 Add Food -->
@@ -192,10 +194,12 @@
       <input id="food-grams" type="number" min="1" step="1" value="100" />
     </label>
 
-    <div class="row">
-      <button id="btn-food-analyze" class="secondary-btn">Analyze (OpenFoodFacts)</button>
-      <div id="food-status" class="status">Fill name + grams, then Analyze.</div>
-    </div>
+  <div class="row">
+    
+<button id="btn-food-analyze" class="full-btn">Analyze Food</button>
+    <div id="food-status" class="status status-idle">Fill name + grams, then Analyze.</div>
+  </div>
+
 
     <h3 class="subhead">Will be tracked (editable):</h3>
     <div id="food-values"></div>

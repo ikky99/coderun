@@ -14,6 +14,24 @@ function show(id) {
 }
 
 
+const FLOWER_STAGE_TEXT = {
+  1: "Stage 1 – Seed planted\nA tiny seed drops into the soil. Your adventure has officially begun. Every great garden starts here.",
+  2: "Stage 2 – Seed takes root\nThe seed wiggles and settles in. Roots are forming beneath the surface. Something good is coming.",
+  3: "Stage 3 – Sprout emerges\nPop! A little sprout breaks through the ground. Your effort is already paying off. Keep feeding that momentum.",
+  4: "Stage 4 – First leaves form\nFresh green leaves unfold. The plant is finding its rhythm. You’re doing great so far.",
+  5: "Stage 5 – Plant strengthens\nThe stem grows taller and sturdier. This plant means business now. Your consistency is showing.",
+  6: "Stage 6 – Buds appear\nTiny buds appear like secret surprises. The plant is getting ready for something special. Stay on track!",
+  7: "Stage 7 – Protective leaves grow\nThe buds are wrapped up safely. The flower is almost ready to shine. One more push!",
+  8: "Stage 8 – First petal grows\nThe first petal peeks out. Blooming has officially started. That’s a win!",
+  9: "Stage 9 – Second petal grows\nAnother petal joins the party. The flower is coming to life. Progress looks good on you.",
+  10: "Stage 10 – Third petal grows\nMore petals, more color. The bloom is getting fuller by the day. Keep stacking those successes.",
+  11: "Stage 11 – Fourth petal grows\nThe flower is almost complete. It’s looking healthy and happy. Your streak is strong.",
+  12: "Stage 12 – Fifth petal grows\nJust one step away! The flower is nearly at full power. Don’t stop now.",
+  13: "Stage 13 – Final petal completes the flower\nBoom! The flower is fully bloomed. You’ve reached the goal. Take a moment to admire it.",
+  14: "Stage 14 – Seeds spread\nThe flower scatters its seeds across the garden. Your success creates new growth. Let the cycle begin again!"
+};
+
+
 // -------------------
 // Utility
 // -------------------
@@ -574,6 +592,12 @@ function openFlower(goal, indexOrUndefined) {
   document.getElementById("flower-progress-text").textContent =
     `Progress: ${round2(goalObj.current)}${goalObj.unit} / ${round2(goalObj.target)}${goalObj.unit} (${computePercent(goalObj)}%) — Phase ${goalObj.phase}`;
 
+  const stageTextEl = document.getElementById("flower-stage-text");
+  const phase = clamp(goalObj.phase || 1, 1, MAX_PHASE);
+
+  stageTextEl.textContent =
+  FLOWER_STAGE_TEXT[phase] || "";
+
   const canvas = document.getElementById("flower-graph");
   const ctx = canvas.getContext("2d");
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -625,12 +649,16 @@ document.getElementById("btn-food-analyze").onclick = async () => {
 
   if (!foodName || grams <= 0) {
     status.textContent = "Please enter a food name and grams (> 0).";
+    status.className = "status status-error";
     return;
   }
 
+  // SHOW LOADING STATE
+  status.textContent = "Analyzing with OpenFoodFacts...";
+  status.className = "status status-loading";
+
   const nutrientsWanted = trackedGoals.map(g => g.nutrient).filter(n => TRACKABLE.has(n));
 
-  status.textContent = "Analyzing with OpenFoodFacts...";
   try {
     const nutrients = await fetchNutritionFromOpenFoodFacts({ foodName, grams, nutrientsWanted });
 
@@ -645,12 +673,30 @@ document.getElementById("btn-food-analyze").onclick = async () => {
     });
 
     lastAnalyzed = { foodName, grams, nutrients };
-    status.textContent = "Done. You can edit values, then press Add.";
+
+    // SHOW SUCCESS STATE
+    if (Object.values(nutrients).every(v => v === 0)) {
+      status.textContent = `Food "${foodName}" found but no nutritional data available.`;
+      status.className = "status status-error";
+    } else {
+      status.textContent = `Food "${foodName}" found and analyzed. You can edit values, then press Add.`;
+      status.className = "status status-success";
+    }
+
   } catch (err) {
     console.error(err);
-    status.textContent = "OpenFoodFacts error. Try a more specific name (brand + product).";
+    status.textContent = `Error analyzing "${foodName}". Try a more specific name (brand + product).`;
+    status.className = "status status-error";
   }
 };
+
+document.getElementById("food-name").addEventListener("input", () => {
+  const status = document.getElementById("food-status");
+  status.textContent = "Fill name + grams, then Analyze.";
+  status.className = "status status-idle";
+});
+
+
 
 document.getElementById("btn-add-food-save").onclick = () => {
   const foodName = (document.getElementById("food-name").value || "Food").trim();
