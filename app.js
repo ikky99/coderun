@@ -11,6 +11,8 @@ function show(id) {
 
   updateContinueButtons();
   updateWorkoutVisibility(); 
+  
+  updateAddRowVisibility();
 }
 
 
@@ -76,6 +78,18 @@ function updateContinueButtons() {
   if (ownBtn) ownBtn.disabled = disabled;
   if (trackBtn) trackBtn.disabled = disabled;
 }
+
+
+function updateAddRowVisibility() {
+  const show = trackedGoals.length < TRACKABLE.size;
+
+  const trackRow = document.getElementById("add-track-row");
+  const ownRow = document.getElementById("add-own-row");
+
+  if (trackRow) trackRow.style.display = show ? "flex" : "none";
+  if (ownRow) ownRow.style.display = show ? "flex" : "none";
+}
+
 
 
 // -------------------
@@ -146,6 +160,9 @@ document.getElementById("btn-gen-realistic").onclick = () => {
   // reset nutrients selection
   trackedGoals = [];
   resetTrackSelects();
+
+  
+  updateAddRowVisibility();
   renderTrackList();
   renderOwnList();
 
@@ -182,6 +199,8 @@ updateWorkoutVisibility();
   renderOwnList();
   renderTrackList();
   updateContinueButtons();
+  
+  updateAddRowVisibility();
 
   document.getElementById("realistic-hint").style.display = "none";
 
@@ -241,6 +260,8 @@ document.getElementById("track-continue").onclick = () => {
 
 document.getElementById("btn-change-tracked").onclick = () => {
   resetTrackSelects();
+  
+updateAddRowVisibility();
 
   trackedGoals.forEach(g => {
     removeOptionFromSelect(
@@ -335,6 +356,8 @@ function addGoalFromValue(value) {
   });
 
   updateContinueButtons();
+  
+  updateAddRowVisibility();
 }
 
 
@@ -344,6 +367,7 @@ document.getElementById("add-track-btn").onclick = () => {
   if (!v) return;
 
   addGoalFromValue(v);
+  updateAddRowVisibility();
   // als realistic mode: targets meteen updaten (op basis van huidige workouts)
   if (goalMode === "realistic") {
     const workouts = parseInt(document.getElementById("workouts-per-week").value, 10) || 0;
@@ -363,6 +387,7 @@ document.getElementById("add-own-btn").onclick = () => {
   if (!v) return;
 
   addGoalFromValue(v);
+  updateAddRowVisibility();
 
   removeOptionFromSelect(select, v);
   removeOptionFromSelect(document.getElementById("add-track-select"), v);
@@ -414,6 +439,7 @@ function renderTrackList() {
 
       renderTrackList();
       updateContinueButtons();
+      updateAddRowVisibility();
     };
 
     list.appendChild(card);
@@ -477,6 +503,7 @@ function renderOwnList() {
       renderOwnList();
       renderTrackList();
       updateContinueButtons();
+      updateAddRowVisibility();
     };
 
     list.appendChild(card);
@@ -484,8 +511,6 @@ function renderOwnList() {
 
   renderTrackList();
 }
-
-
 
 
 
@@ -965,3 +990,4 @@ document.getElementById("btn-start-garden").onclick = () => {
 renderOwnList();
 renderTrackList();
 updateContinueButtons();
+updateAddRowVisibility();

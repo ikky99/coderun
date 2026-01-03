@@ -288,3 +288,9 @@ button:disabled {
   transform: scale(2) translateY(6px);
   transform-origin: center;
 }
+
+.add-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
