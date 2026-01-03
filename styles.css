@@ -1,3 +1,7 @@
+/* =========================================================
+   Base layout (intentionally app-like, not responsive-first)
+   ========================================================= */
+
 body {
   background: #081020;
   display: flex;
@@ -6,6 +10,7 @@ body {
   color: white;
 }
 
+/* Phone container (fixed-size prototype UI) */
 .phone {
   width: 380px;
   height: 700px;
@@ -16,17 +21,26 @@ body {
   overflow: hidden;
 }
 
+/* =========================================================
+   Screen system (JS-driven view switching)
+   ========================================================= */
+
 .screen {
-  display: none;
+  display: none;              /* hidden by default */
   flex-direction: column;
   gap: 15px;
 }
 
 .screen.active {
-  display: flex;
+  display: flex;              /* active screen */
 }
 
-input, select {
+/* =========================================================
+   Form controls
+   ========================================================= */
+
+input,
+select {
   width: 100%;
   padding: 10px;
   border-radius: 10px;
@@ -40,6 +54,10 @@ input, select {
   border-radius: 12px;
   margin-top: 10px;
 }
+
+/* =========================================================
+   Rows & chips
+   ========================================================= */
 
 .row {
   display: flex;
@@ -67,7 +85,7 @@ input, select {
   flex: 1;
 }
 
-/* small card for goal with target input and remove */
+/* Small card for goals */
 .goal-card {
   display: flex;
   gap: 8px;
@@ -81,16 +99,23 @@ input, select {
   width: 110px;
 }
 
-/* Garden */
+/* =========================================================
+   Garden grid (pixel-art game board)
+   ========================================================= */
+
 .garden-grid {
   display: grid;
   grid-template-columns: repeat(5, 60px);
   grid-template-rows: repeat(8, 60px);
   gap: 10px;
+
   background: #150d1f;
   padding: 10px;
   border-radius: 15px;
+
   align-content: start;
+  width: max-content;     /* merged duplicate definition */
+  margin: 0 auto;
 }
 
 .garden-cell {
@@ -98,24 +123,26 @@ input, select {
   height: 60px;
   border-radius: 8px;
   background: transparent;
+
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
+
   position: relative;
-  overflow: hidden; /* knipt alles buiten 60x60 af */
+  overflow: hidden;       /* clip oversized sprites */
 }
 
-/* dry cell (empty brown soil) */
+/* Dry (empty) soil */
 .dry-cell {
   width: 60px;
   height: 60px;
   border-radius: 8px;
-  background: linear-gradient(180deg,#6b3f1e,#4b2b14);
+  background: linear-gradient(180deg, #6b3f1e, #4b2b14);
   box-shadow: inset 0 2px 6px rgba(0,0,0,0.6);
 }
 
-/* images in cells */
+/* Cell images (pixel-art intent) */
 .garden-cell img {
   width: 100%;
   height: 100%;
@@ -126,7 +153,31 @@ input, select {
   image-rendering: pixelated;
 }
 
-/* bottom bar */
+/* =========================================================
+   Prototype shortcut:
+   Flower type detection via filename substrings
+   (fragile but intentional for this stage)
+   ========================================================= */
+
+/* Base scaling for flower types 2–4 */
+.garden-cell img[src*="bloem2"],
+.garden-cell img[src*="bloem3"],
+.garden-cell img[src*="bloem4"] {
+  transform: scale(2);
+  transform-origin: center;
+}
+
+/* Flower type 2 needs additional vertical offset
+   NOTE: transform fully redefined on purpose */
+.garden-cell img[src*="bloem2"] {
+  transform: scale(2) translateY(6px);
+  transform-origin: center;
+}
+
+/* =========================================================
+   Bottom UI elements
+   ========================================================= */
+
 .bottom-bar {
   position: absolute;
   bottom: 10px;
@@ -135,12 +186,14 @@ input, select {
   justify-content: space-between;
 }
 
-/* flower preview */
 .flower-preview img {
   width: 120px;
 }
 
-/* food values */
+/* =========================================================
+   Food status & text blocks
+   ========================================================= */
+
 #food-values .food-row {
   display: flex;
   gap: 8px;
@@ -160,6 +213,16 @@ input, select {
   line-height: 1.2;
 }
 
+/* Status color states */
+.status-idle    { color: #fff; }
+.status-loading { color: #ffdd00; font-weight: bold; }
+.status-success { color: #0f0;    font-weight: bold; }
+.status-error   { color: #f33;    font-weight: bold; }
+
+/* =========================================================
+   Buttons
+   ========================================================= */
+
 button {
   cursor: pointer;
   padding: 8px 10px;
@@ -174,7 +237,6 @@ button {
   border: 1px solid rgba(255,255,255,0.12);
 }
 
-/* remove small button */
 .btn-remove {
   background: #a33;
   padding: 6px 8px;
@@ -186,7 +248,19 @@ button {
   font-size: 0.9rem;
 }
 
-/* Skip button */
+/* Disabled buttons */
+button:disabled {
+  background: #3a3f46;
+  color: #9aa0a6;
+  cursor: not-allowed;
+  opacity: 0.7;
+  box-shadow: none;
+}
+
+/* =========================================================
+   Skip button (fixed overlay)
+   ========================================================= */
+
 .skip-btn {
   position: fixed;
   top: 20px;
@@ -198,10 +272,9 @@ button {
 
   background-color: #ffb703;
   color: #000;
-  border: none;
   border-radius: 20px;
-  cursor: pointer;
 
+  cursor: pointer;
   box-shadow: 0 4px 10px rgba(0,0,0,0.2);
   z-index: 1000;
 }
@@ -210,7 +283,10 @@ button {
   background-color: #ffa200;
 }
 
-/* tiny helper block */
+/* =========================================================
+   Helper blocks & text
+   ========================================================= */
+
 .hint {
   font-size: 0.9rem;
   opacity: 0.85;
@@ -221,48 +297,6 @@ button {
   border: 1px solid rgba(255,255,255,0.08);
 }
 
-/* responsive-ish */
-@media (max-width: 420px) {
-  .phone { width: 360px; }
-}
-
-
-/* disabled buttons */
-button:disabled {
-  background: #3a3f46;      /* grey-ish */
-  color: #9aa0a6;
-  cursor: not-allowed;
-  opacity: 0.7;
-  box-shadow: none;
-}
-
-
-/* Food status states */
-.status-idle {
-  color: #fff;
-}
-
-.status-loading {
-  color: #ffdd00;
-  font-weight: bold;
-}
-
-.status-success {
-  color: #0f0;
-  font-weight: bold;
-}
-
-.status-error {
-  color: #f33;
-  font-weight: bold;
-}
-
-.garden-grid {
-  width: max-content;
-  margin: 0 auto;
-}
-
-
 .stage-text {
   margin-top: 12px;
   padding: 12px;
@@ -270,23 +304,8 @@ button:disabled {
   border-radius: 12px;
   font-size: 0.95rem;
   line-height: 1.45;
-  white-space: pre-line; /* keeps line breaks */
+  white-space: pre-line;
   border: 1px solid rgba(255,255,255,0.08);
-}
-
-
-/* Enlarge flower types 2, 3 and 4 (all phases) */
-.garden-cell img[src*="bloem2"],
-.garden-cell img[src*="bloem3"],
-.garden-cell img[src*="bloem4"] {
-  transform: scale(2);
-  transform-origin: center;
-}
-
-/* Adjust flower type 2 position (scaled + moved down) */
-.garden-cell img[src*="bloem2"] {
-  transform: scale(2) translateY(6px);
-  transform-origin: center;
 }
 
 .add-row {
@@ -295,15 +314,27 @@ button:disabled {
   align-items: center;
 }
 
+/* =========================================================
+   Flower detail screen
+   ========================================================= */
 
-/* Flower detail: back button bottom-left, unchanged style */
 #screen-flower {
   position: relative;
-  padding-bottom: 70px; /* prevent overlap with content */
+  padding-bottom: 70px; /* avoid bottom overlap */
 }
 
 #screen-flower .btn-return {
   position: absolute;
   bottom: 20px;
   left: 20px;
+}
+
+/* =========================================================
+   Minimal responsiveness (intentional constraint)
+   ========================================================= */
+
+@media (max-width: 420px) {
+  .phone {
+    width: 360px;
+  }
 }
