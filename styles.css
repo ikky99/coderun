@@ -273,3 +273,18 @@ button:disabled {
   white-space: pre-line; /* keeps line breaks */
   border: 1px solid rgba(255,255,255,0.08);
 }
+
+
+/* Enlarge flower types 2, 3 and 4 (all phases) */
+.garden-cell img[src*="bloem2"],
+.garden-cell img[src*="bloem3"],
+.garden-cell img[src*="bloem4"] {
+  transform: scale(2);
+  transform-origin: center;
+}
+
+/* Adjust flower type 2 position (scaled + moved down) */
+.garden-cell img[src*="bloem2"] {
+  transform: scale(2) translateY(6px);
+  transform-origin: center;
+}
