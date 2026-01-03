@@ -94,11 +94,12 @@
     </div>
   </div>
 
-  <!-- 2.1 Tracking Selection -->
-  <div id="screen-track-choose" class="screen">
-    <h2>What do you want to track?</h2>
+<!-- 2.1 Tracking Selection -->
+<div id="screen-track-choose" class="screen">
+  <h2>What do you want to track?</h2>
 
-    <!-- NEW: sport frequency -->
+  <!-- workouts: realistic mode only -->
+  <div id="workouts-wrapper">
     <label>How often do you exercise per week?
       <select id="workouts-per-week">
         <option value="0">0 (rarely)</option>
@@ -111,29 +112,26 @@
         <option value="7">7</option>
       </select>
     </label>
-
-    <div id="realistic-hint" class="hint" style="display:none;">
-      In “realistic goal” mode we calculate daily targets based on your age/sex/height/weight + workouts/week.
-      You can still choose which nutrients you want to track.
-    </div>
-
-    <div id="track-list" class="chip-list"></div>
-
-    <div class="add-row">
-      <select id="add-track-select">
-        <option value="hydration" data-unit="L">Hydration</option>
-        <option value="protein" data-unit="g">Protein</option>
-        <option value="carbs" data-unit="g">Carbs</option>
-        <option value="fat" data-unit="g">Fat</option>
-      </select>
-      <button id="add-track-btn">+</button>
-    </div>
-
-    <div class="row">
-      <button class="btn-return" data-target="screen-welcome">Return</button>
-      <button id="track-continue">Continue</button>
-    </div>
   </div>
+
+  <div id="realistic-hint" class="hint" style="display:none;">
+    In “realistic goal” mode we calculate daily targets based on your age/sex/height/weight + workouts/week.
+    You can still choose which nutrients you want to track.
+  </div>
+
+  <div id="track-list" class="chip-list"></div>
+
+  <div class="add-row">
+    <select id="add-track-select"></select>
+    <button id="add-track-btn">+</button>
+  </div>
+
+  <div class="row">
+    <button class="btn-return" data-target="screen-welcome">Return</button>
+    <button id="track-continue">Continue</button>
+  </div>
+</div>
+
 
   <!-- 3. Own Goals -->
   <div id="screen-gen-own" class="screen">
@@ -221,10 +219,10 @@
     <h2>Add Food / Drink</h2>
 
     <label>Food name:
-      <input id="food-name" placeholder="banana" />
+      <input id="food-name" placeholder="Add food here e.g. banana" />
     </label>
 
-    <label>Amount (grams):
+    <label>Amount (grams or mL for drinks):
       <input id="food-grams" type="number" min="1" step="1" value="100" />
     </label>
 

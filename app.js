@@ -9,9 +9,10 @@ function show(id) {
   const screen = document.getElementById(id);
   if (screen) screen.classList.add("active");
 
-  // update Continue buttons whenever a screen is shown
   updateContinueButtons();
+  updateWorkoutVisibility(); 
 }
+
 
 
 const FLOWER_STAGE_TEXT = {
@@ -170,15 +171,30 @@ document.getElementById("btn-gen-own").onclick = () => {
   const weightKg = parseFloat(document.getElementById("weight").value);
   const age = calculateAge(dob);
 
-  goalMode = "own";
+  goalMode = "own"; // or "realistic"
+updateWorkoutVisibility();
+
   userProfile = { name, age, gender, heightCm, weightKg };
 
-  // hint uit
+  // ✅ ADD THIS
+  trackedGoals = [];
+  resetTrackSelects();
+  renderOwnList();
+  renderTrackList();
+  updateContinueButtons();
+
   document.getElementById("realistic-hint").style.display = "none";
 
-  console.log("User info (own goals):", userProfile);
   show("screen-gen-own");
 };
+
+function updateWorkoutVisibility() {
+  const wrapper = document.getElementById("workouts-wrapper");
+  if (!wrapper) return;
+  wrapper.style.display = (goalMode === "realistic") ? "block" : "none";
+}
+
+
 
 document.querySelectorAll(".btn-return").forEach(btn => {
   btn.onclick = () => {
@@ -224,10 +240,27 @@ document.getElementById("track-continue").onclick = () => {
 
 
 document.getElementById("btn-change-tracked").onclick = () => {
-  // hint alleen in realistic mode
-  document.getElementById("realistic-hint").style.display = (goalMode === "realistic") ? "block" : "none";
+  resetTrackSelects();
+
+  trackedGoals.forEach(g => {
+    removeOptionFromSelect(
+      document.getElementById("add-track-select"),
+      g.nutrient
+    );
+    removeOptionFromSelect(
+      document.getElementById("add-own-select"),
+      g.nutrient
+    );
+  });
+
+  document.getElementById("realistic-hint").style.display =
+    (goalMode === "realistic") ? "block" : "none";
+
+  renderTrackList();
   show("screen-track-choose");
 };
+
+
 
 document.getElementById("btn-add-food").onclick = () => prepareAddFood();
 
@@ -340,64 +373,121 @@ document.getElementById("add-own-btn").onclick = () => {
 function renderTrackList() {
   const list = document.getElementById("track-list");
   list.innerHTML = "";
+
   trackedGoals.forEach(g => {
-    const chip = document.createElement("div");
-    chip.className = "chip";
-    chip.innerHTML = `<div class="label">${capitalize(g.nutrient)} — target: ${round2(g.target)}${g.unit}</div>`;
-    list.appendChild(chip);
+    const card = document.createElement("div");
+    card.className = "goal-card";
+
+    card.innerHTML = `
+      <div style="flex:1">
+        <strong>${capitalize(g.nutrient)}</strong>
+        <div style="font-size:0.8rem; opacity:0.8">${g.unit} per day</div>
+      </div>
+
+      <input type="number" step="any" min="0" value="${round2(g.target)}" />
+
+      <button class="btn-remove small">Remove</button>
+    `;
+
+    /* edit target */
+    card.querySelector("input").oninput = (e) => {
+      g.target = parseFloat(e.target.value) || 0;
+    };
+
+    /* remove goal */
+    card.querySelector(".btn-remove").onclick = () => {
+      trackedGoals = trackedGoals.filter(x => x.id !== g.id);
+
+      addOptionToSelect(
+        document.getElementById("add-track-select"),
+        g.nutrient,
+        capitalize(g.nutrient),
+        g.unit
+      );
+
+      addOptionToSelect(
+        document.getElementById("add-own-select"),
+        g.nutrient,
+        capitalize(g.nutrient),
+        g.unit
+      );
+
+      renderTrackList();
+      updateContinueButtons();
+    };
+
+    list.appendChild(card);
   });
 }
+
+
+
 
 function renderOwnList() {
   const list = document.getElementById("own-track-list");
   list.innerHTML = "";
+
   trackedGoals.forEach(g => {
     const card = document.createElement("div");
     card.className = "goal-card";
     card.dataset.goalId = g.id;
+
     card.innerHTML = `
       <div style="flex:1;">
         <strong>${capitalize(g.nutrient)}</strong>
         <div style="font-size:0.85rem; color: #bcd">${g.unit} per day</div>
       </div>
-      <input type="number" step="any" min="0" value="${g.target}" title="Daily target" />
+
+      <input
+        type="number"
+        step="any"
+        min="0"
+        value="${g.target}"
+        title="Daily target"
+      />
+
       <button class="btn-remove small">Remove</button>
     `;
 
+    // ✅ FIX: correctly get the input
     const input = card.querySelector("input");
+
     input.oninput = (e) => {
       g.target = parseFloat(e.target.value) || 0;
       renderTrackList();
     };
 
-card.querySelector(".btn-remove").onclick = () => {
-  trackedGoals = trackedGoals.filter(x => x.id !== g.id);
+    card.querySelector(".btn-remove").onclick = () => {
+      trackedGoals = trackedGoals.filter(x => x.id !== g.id);
 
-  addOptionToSelect(
-    document.getElementById("add-own-select"),
-    g.nutrient,
-    capitalize(g.nutrient),
-    g.unit
-  );
+      addOptionToSelect(
+        document.getElementById("add-own-select"),
+        g.nutrient,
+        capitalize(g.nutrient),
+        g.unit
+      );
 
-  addOptionToSelect(
-    document.getElementById("add-track-select"),
-    g.nutrient,
-    capitalize(g.nutrient),
-    g.unit
-  );
+      addOptionToSelect(
+        document.getElementById("add-track-select"),
+        g.nutrient,
+        capitalize(g.nutrient),
+        g.unit
+      );
 
-  renderOwnList();
-  renderTrackList();
-  updateContinueButtons();
-};
-
+      renderOwnList();
+      renderTrackList();
+      updateContinueButtons();
+    };
 
     list.appendChild(card);
   });
 
   renderTrackList();
 }
+
+
+
+
 
 // -------------------
 // REALISTIC GOALS (NEW)
@@ -449,12 +539,15 @@ function applyRealisticTargets({ profile, workoutsPerWeek }) {
   const hydrationL = clamp((35 * weightKg) / 1000 + (0.4 * w), 1.5, 5.0);
 
   // Apply only to selected tracked goals
-  trackedGoals.forEach(g => {
-    if (g.nutrient === "protein") g.target = round2(proteinG);
-    if (g.nutrient === "fat") g.target = round2(fatG);
-    if (g.nutrient === "carbs") g.target = round2(carbsG);
-    if (g.nutrient === "hydration") g.target = round2(hydrationL);
-  });
+trackedGoals.forEach(g => {
+  if (g._manualOverride) return;
+
+  if (g.nutrient === "protein") g.target = round2(proteinG);
+  if (g.nutrient === "fat") g.target = round2(fatG);
+  if (g.nutrient === "carbs") g.target = round2(carbsG);
+  if (g.nutrient === "hydration") g.target = round2(hydrationL);
+});
+
 
   console.log("Realistic targets applied:", {
     profile,
