@@ -1,5 +1,4 @@
 let hadFoodInputToday = false;
-let currentDay = 0;
 
 // -------------------
 // Simple navigation system
@@ -105,7 +104,7 @@ const UNIT_MAP = {
   fat: "g",
 };
 
-// ✅ Bloem per nutrient (mapnaam in /images)
+// Bloem per nutrient (/images)
 const FLOWER_FOLDER_MAP = {
   hydration: "bloem1",
   protein: "bloem2",
@@ -113,7 +112,6 @@ const FLOWER_FOLDER_MAP = {
   fat: "bloem4",
 };
 
-// ✅ pas aan als je bestanden .jpg zijn
 const IMG_EXT = "png";
 
 // helper: juiste image path voor deze nutrient + phase
@@ -134,7 +132,6 @@ const MAX_LANES = Math.floor(GRID_ROWS / LANE_ROWS); // 4 lanes
 // -------------------
 let trackedGoals = []; // { id, nutrient, unit, target, current, phase, cycle }
 
-// NEW: mode + profile
 let goalMode = null; // "realistic" | "own" | null
 let userProfile = null; // { age, gender, heightCm, weightKg, name }
 
@@ -565,7 +562,6 @@ function applyRealisticTargets({ profile, workoutsPerWeek }) {
 
   // Apply only to selected tracked goals
 trackedGoals.forEach(g => {
-  if (g._manualOverride) return;
 
   if (g.nutrient === "protein") g.target = round2(proteinG);
   if (g.nutrient === "fat") g.target = round2(fatG);
@@ -687,9 +683,6 @@ function renderGarden() {
   });
 }
 
-function refreshGardenUI() {
-  renderGarden();
-}
 
 // -------------------
 // Flower detail
@@ -850,12 +843,12 @@ document.getElementById("btn-add-food-save").onclick = () => {
 
   hadFoodInputToday = true;
   console.log(`Added ${foodName}:`, additionsByGoalId, { analyzed: lastAnalyzed });
-  refreshGardenUI();
+  renderGarden();
   show("screen-garden");
 };
 
 document.getElementById("skip-btn").addEventListener("click", () => {
-  currentDay += 1;
+
 
   // als je vandaag niks hebt ingevoerd: 1 fase terug voor elke tracked goal
   if (!hadFoodInputToday) {
@@ -864,7 +857,7 @@ document.getElementById("skip-btn").addEventListener("click", () => {
 
   hadFoodInputToday = false;
 
-  refreshGardenUI();
+  renderGarden();
   show("screen-garden");
 });
 
@@ -991,3 +984,5 @@ renderOwnList();
 renderTrackList();
 updateContinueButtons();
 updateAddRowVisibility();
+
+
