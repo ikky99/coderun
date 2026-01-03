@@ -294,3 +294,16 @@ button:disabled {
   gap: 8px;
   align-items: center;
 }
+
+
+/* Flower detail: back button bottom-left, unchanged style */
+#screen-flower {
+  position: relative;
+  padding-bottom: 70px; /* prevent overlap with content */
+}
+
+#screen-flower .btn-return {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+}
