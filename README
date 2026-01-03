@@ -1,0 +1,98 @@
+# NutriGarden 🌱
+
+NutriGarden is a **frontend-only prototype web app** that helps users build healthy nutrition habits by turning daily nutrition tracking into a growing **flower garden**.
+
+Each tracked nutrient becomes a flower:
+
+* Meet your daily goals → flowers grow
+* Miss your goals → flowers regress 
+
+The app runs entirely in the browser and requires **no backend** and **no API keys**.
+
+
+## Tech Stack
+
+* **HTML** – screen-based UI
+* **CSS** – fixed mobile-style layout & pixel-art garden
+* **Vanilla JavaScript** – all logic, state & rendering
+* **OpenFoodFacts API** – nutrition lookup (public, no auth)
+
+No frameworks, build tools, or dependencies required.
+
+---
+
+## Project Structure
+
+```text
+/
+├─ index.html        # Main HTML entry
+├─ app.js            # Application logic & state
+├─ styles.css        # Styling
+├─ images/
+│  ├─ bloem1/        # Hydration flower stages (1–14)
+│  ├─ bloem2/        # Protein flower stages
+│  ├─ bloem3/        # Carbs flower stages
+│  └─ bloem4/        # Fat flower stages
+└─ README.md
+```
+
+> ⚠️ Each `bloemX` folder must contain images named `1.png` → `14.png`.
+
+## How It Works (High Level)
+
+1. User enters personal details
+2. Chooses **realistic goals** or **custom goals**
+3. Selects which nutrients to track:
+   * Hydration
+   * Protein
+   * Carbs
+   * Fat
+4. Logs food by name + grams
+5. Nutrition values are fetched from OpenFoodFacts
+6. Each nutrient progresses through flower growth stages
+7. Completing stage 14 plants a new flower seed
+
+## Running the App
+
+### VS Code Live Server
+
+This is the easiest and most reliable option.
+
+1. Install the **Live Server** extension in VS Code
+2. Open the project folder
+3. Right-click `index.html`
+4. Select **“Open with Live Server”**
+
+The app will open in your browser (usually at `http://127.0.0.1:5500`).
+
+### Option 2: Any Local Web Server
+
+You **must** use a local server because:
+
+* `fetch()` (OpenFoodFacts) will fail with `file://`
+* Some browsers block local JS features otherwise
+
+#### Using Python
+
+```bash
+python -m http.server 8000
+```
+
+Then open:
+
+```
+http://localhost:8000
+```
+
+#### Using Node.js
+
+```bash
+npx serve
+```
+
+
+## License
+
+This project is provided as-is for educational and prototype purposes.
+
+
